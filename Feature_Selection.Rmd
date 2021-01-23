@@ -1,0 +1,185 @@
+---
+title: "Feature_Selection"
+author: "Roselynn"
+date: "1/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importing the Dataset and Loading the Appropriate Packages.
+
+I first loaded the tidyverse package and then imported my dataset 
+
+```{r}
+
+library(tidyverse)
+library(caret)
+
+```
+
+
+
+```{r}
+
+dataset <- read.csv("http://bit.ly/CarreFourDataset")
+
+```
+
+I then used the glimpse() function to preview my dataset
+
+```{r}
+
+glimpse(dataset)
+
+```
+
+The dataset had 16 columns , 8 of type character and 8 numeric columns.
+
+
+
+
+
+# 2.Data Cleaning
+
+I then used the summary() function to get the summary statistics of the columns in my dataset.
+
+```{r}
+
+summary(dataset)
+
+```
+
+### 2.1.Checking for Null Values 
+
+I checked for any null entries , the dataset had none
+
+```{r}
+
+sum(is.na(dataset))
+
+```
+
+
+```{r}
+
+sum(duplicated(dataset))
+
+```
+
+
+
+# 3.Feature Selection
+
+## 3.1.Filter Method
+
+The used the correlation coefficient to filter out the highly correlated freatures from the dataset.
+
+```{r}
+
+dataset <- select(dataset , -1,-2,-3,-4,-5,-9,-10,-11,-13)
+head(dataset)
+
+```
+
+
+I used the Pearson's Correlation Coefficient and set a cutoff of 0.75 , features with a correlation coefficient greater that 0.75 were then excluded from the model.
+
+```{r}
+# Calculating the correlation matrix
+
+correlationMatrix <- cor(dataset)
+
+
+library(ggcorrplot)
+library(corrplot)
+
+ggcorrplot(correlationMatrix ,hc.order=F,lab=T, type = 'upper' , tl.srt=90 , ggtheme = ggplot2::theme_gray, )
+
+```
+
+
+
+```{r}
+# Find attributes that are highly correlated
+
+highlyCorrelated <- findCorrelation(correlationMatrix, cutoff=0.75)
+
+# Highly correlated attributes
+
+highlyCorrelated
+
+names(dataset[,highlyCorrelated])
+
+```
+
+The highly correlated features in this dataset were the Cogs , Total and Tax features with a correlation coefficient of 1.
+
+
+
+
+```{r , fig.width=10,fig.length=10}
+
+# We can remove the variables with a higher correlation 
+# and comparing the results graphically as shown below
+# ---
+# 
+# Removing Redundant Features 
+# ---
+# 
+Dataset2<-dataset[-highlyCorrelated]
+
+# Performing our graphical comparison
+# ---
+# 
+par(mfrow = c(1, 2))
+corrplot(correlationMatrix, order = "hclust")
+corrplot(cor(Dataset2), order = "hclust")
+
+```
+
+## 3.2.Wrapper Method
+
+
+```{r}
+
+Dataset <- read.csv("http://bit.ly/CarreFourDataset")
+Dataset <- select(Dataset , -1,-2,-3,-4,-5,-9,-10,-11,-13)
+head(Dataset)
+
+```
+
+
+```{r}
+# Sequential forward greedy search (default)
+# ---
+#
+library(clustvarsel)
+library(mclust)
+out = clustvarsel(Dataset)
+out
+
+```
+
+
+```{r}
+# The selection algorithm would indicate that the subset 
+# we use for the clustering model is composed of variables X1 and X2 
+# and that other variables should be rejected. 
+# Having identified the variables that we use, we proceed to build the clustering model:
+# ---
+#
+
+Subset1 = Dataset[,out$subset]
+mod = Mclust(Subset1)
+summary(mod)
+
+```
+
+
+```{r}
+plot(mod,c("classification"))
+
+```

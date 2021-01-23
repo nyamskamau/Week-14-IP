@@ -1,0 +1,159 @@
+---
+title: "Association Rules - Week 14"
+author: "Roselynn"
+date: "1/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1.Loading the Packages and Importing the Dataset
+
+I loaded the tidyverse package and the arules package
+
+```{r}
+
+library(arules)
+library(tidyverse)
+
+```
+
+I imported the dataset using the read.transactions() function
+
+```{r}
+
+# Importing the Dataset
+dataset <- read.transactions("http://bit.ly/SupermarketDatasetII" ,  
+                                   sep =",")
+#View(dataset)
+```
+
+I used the summary function to obtain the summary statisics of the dataset.
+
+```{r}
+
+summary(dataset)
+
+```
+The dataset had 119 items with 7501 itemsets with the most frequently purchased item being mineral water.
+
+
+I then previewed the first ten itemsets using the inspect function
+
+```{r}
+inspect(dataset[1:10])
+
+```
+
+
+I also previewed the labels of the items in my dataset.
+
+```{r}
+
+items <- as.data.frame(itemLabels(dataset))
+colnames(items) <- "Item"
+head(items, 10)    
+tail(items,10)
+```
+
+
+I then inspected the frequency of the first 15 labels in my dataset.
+
+```{r}
+
+itemFrequency(dataset[, 1:15],type = "absolute")
+
+``` 
+
+I plotted the top 20 most frequent items in the dataset using the ItemFrequency and topN.
+
+```{r}
+
+itemFrequencyGGPlot <- function(x, topN) {
+  library(tidyverse)
+  x %>%
+    itemFrequency %>%
+    sort %>%
+    tail(topN) %>%
+    as.data.frame %>%
+    tibble::rownames_to_column() %>%
+    ggplot(aes(reorder(rowname, `.`),`.`)) + 
+    geom_col(fill='cyan4') + labs(title='Top 20 Labels in the Dataset' , y  = "Frequency" , x = 'Items')+
+    coord_flip()
+}  
+itemFrequencyGGPlot(dataset, 20)
+
+```
+The most frequent label within the whole dataset was the Mineral water , followed by eggs.
+
+
+## Association Rules
+
+I then obtained the rules of the dataset using the apriori()  function.
+
+```{r}
+
+rules <- apriori (dataset, parameter = list(supp = 0.001, conf = 0.7))
+rules
+
+```
+
+I set my support as 0.001 and my confidence as 0.7 , I got 200 rules from the dataset 
+
+I then used the inspect function to see the first 10 rules of my dataset
+
+```{r}
+inspect(rules[1:10])
+
+```
+
+## Visualizing association rules using the arulesviz package
+
+```{r}
+#install.packages("arulesViz")
+library(arulesViz)
+
+```
+
+```{r}
+
+## Scatterplot with custom colors
+library(colorspace) # for sequential_hcl
+plot(rules, control=list(col=sequential_hcl(100)))
+
+```
+
+
+```{r , fig.width=10,fig.height=10}
+
+subrules <- head(rules, n = 15, by = "confidence")
+
+
+plot(subrules, method = "graph" ,   engine = "htmlwidget")
+
+
+plot(subrules, method = "graph" ,   engine = "default")
+
+
+plot(subrules, method = "paracoord")
+
+```
+
+
+
+```{r , fig.width=10,fig.height=10}
+
+    
+## Two-key plot is a scatterplot with shading = "order"
+plot(rules, shading="order", control=list(main = "Two-key plot", 
+  col=rainbow(10)))
+
+## 2D matrix with shading
+plot(subrules,method="grouped", measure="confidence", engine ="default" )
+
+
+```
+
+

@@ -1,0 +1,125 @@
+---
+title: "PCA"
+author: "Roselynn"
+date: "1/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importing the Dataset and Loading the Appropriate Packages.
+
+I first loaded the tidyverse package and then imported my dataset 
+
+```{r}
+
+library(tidyverse)
+
+```
+
+
+
+```{r}
+
+dataset <- read.csv("http://bit.ly/CarreFourDataset")
+
+```
+
+I then used the glimpse() function to preview my dataset
+
+```{r}
+
+glimpse(dataset)
+
+```
+
+The dataset had 16 columns , 8 of type character and 8 numeric columns.
+
+# 2.Data Cleaning
+
+I then used the summary() function to get the summary statistics of the columns in my dataset.
+
+```{r}
+
+summary(dataset)
+
+```
+
+### 2.1.Checking for Null Values 
+
+I checked for any null entries , the dataset had none
+
+```{r}
+
+sum(is.na(dataset))
+
+```
+
+
+```{r}
+
+sum(duplicated(dataset))
+
+```
+
+
+
+# Principal Component Analysis
+
+```{r}
+rownames(dataset)   <- dataset[,1]
+
+```
+
+Finally I selected the numeric columns in my dataset and carried out PCA using the prcomp() function.
+
+```{r}
+
+dataset <- select(dataset , -1,-2,-5,-13,-9,-10,-11)
+head(dataset)
+
+```
+
+I selected all the continuous features in my dataset and carried PCA with the prcomp() funtion.
+
+```{r}
+pca <- prcomp(dataset[,c(3,5:9)], center = TRUE, scale = TRUE)
+summary(pca)
+
+```
+
+After carrying out PCA I noted that the first principal component explained 74.43% of the total variance while the last three components explained 0% of the variance.
+
+
+Using the str() function , I noted that
+```{r}
+
+str(pca)
+
+```
+
+# Plotting the Principal Components
+
+```{r}
+
+library(ggbiplot)
+ggbiplot(pca, obs.scale = 0.2, var.scale = 0.5)
+
+```
+
+
+```{r}
+
+library(ggbiplot)
+ggbiplot(pca, obs.scale = 0.5, var.scale = 0.5, groups = dataset$Customer.type,ellipse = TRUE, circle = TRUE)
+
+```
+```{r}
+
+library(ggbiplot)
+ggbiplot(pca, obs.scale = .05, var.scale = 1, groups = as.factor(dataset$Quantity), ellipse = TRUE, circle = TRUE)
+
+```
+

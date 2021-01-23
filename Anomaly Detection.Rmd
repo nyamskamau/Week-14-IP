@@ -1,0 +1,106 @@
+---
+title: "Anomaly Detection"
+author: "Roselynn"
+date: "1/22/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importing the Dataset and loaded the appropriate packages
+
+I loaded the anomalize() package which is used in anomaly detection and the tidyverse package.
+
+```{r}
+
+library(anomalize)
+library(tidyverse)
+library(tibbletime)
+
+```
+
+I imported the dataset then previewed it 
+
+```{r}
+
+
+dataset <- read.csv("http://bit.ly/CarreFourSalesDataset")
+head(dataset)
+tail(dataset)
+View(dataset)
+```
+
+The dataset had two columns , the Date column was of type character so I converted it to date format using the as.Date function.
+
+
+```{r}
+
+dataset$Date <- as.Date(dataset$Date , format = "%m/%d/%Y")
+head(dataset)
+unique(dataset$Date)
+
+dataset <- as_tbl_time(dataset , index= Date)
+```
+
+I plotted all the Sales made in my dataset.
+
+```{r}
+
+viz <- dataset %>%  
+  ggplot(aes(x = Date, y = Sales)) +
+  geom_line(col = "blue") +
+  ggtitle("Sales from Jan - April") +
+  labs(x = "Date", y = "Sales")
+
+viz
+
+
+```
+
+
+I then used the anomalize() function to detect anomalies in my dataset.
+
+```{r}
+
+ dataset %>%
+  group_by(Date) %>%
+  summarise(Orders = sum(Sales)) %>%
+  time_decompose(Orders, method = "twitter", frequency = "auto", trend = "auto") %>%
+  anomalize(remainder, method = "gesd",alpha = 0.05, max_anoms = 0.2) %>%
+  time_recompose() %>%
+  # Anomaly Visualization
+  plot_anomalies(
+  time_recomposed =T,
+  ncol = 3,
+  color_no = "#2c3e50",
+  color_yes = "#e31a1c",
+  fill_ribbon = "grey70",
+  size_dots = 2,
+  size_circles = 4)
+
+```
+
+
+
+I visualized the decomposition using plot_anomaly_decomposition().
+
+
+```{r , fig.width=7,fig.height=7}
+
+ dataset %>%
+  group_by(Date) %>%
+  summarise(Orders = sum(Sales)) %>%
+  time_decompose(Orders, method = "twitter", frequency = "auto", trend = "auto") %>%
+  anomalize(remainder,method = "gesd", alpha = 0.05, max_anoms = 0.2) %>%
+  time_recompose() %>%
+  # Anomaly Visualization
+  plot_anomaly_decomposition()
+
+```
+
+# Summary
+
+My model detected anomalies within the dataset.
+
