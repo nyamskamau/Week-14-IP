@@ -86,10 +86,11 @@ itemFrequencyGGPlot <- function(x, topN) {
 itemFrequencyGGPlot(dataset, 20)
 
 ```
+
 The most frequent label within the whole dataset was the Mineral water , followed by eggs.
 
 
-## Association Rules
+# Association Rules
 
 I then obtained the rules of the dataset using the apriori()  function.
 
@@ -109,7 +110,9 @@ inspect(rules[1:10])
 
 ```
 
-## Visualizing association rules using the arulesviz package
+# Visualizing association rules using the arulesviz package
+
+I used the arulesviz package to visualize the first fifteen rules created from the parameters of my model.
 
 ```{r}
 #install.packages("arulesViz")
@@ -117,10 +120,12 @@ library(arulesViz)
 
 ```
 
+
 ```{r}
 
 ## Scatterplot with custom colors
-library(colorspace) # for sequential_hcl
+library(colorspace) 
+# for sequential_hcl
 plot(rules, control=list(col=sequential_hcl(100)))
 
 ```
@@ -145,10 +150,7 @@ plot(subrules, method = "paracoord")
 
 ```{r , fig.width=10,fig.height=10}
 
-    
-## Two-key plot is a scatterplot with shading = "order"
-plot(rules, shading="order", control=list(main = "Two-key plot", 
-  col=rainbow(10)))
+
 
 ## 2D matrix with shading
 plot(subrules,method="grouped", measure="confidence", engine ="default" )

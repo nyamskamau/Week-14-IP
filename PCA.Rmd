@@ -13,8 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 I first loaded the tidyverse package and then imported my dataset 
 
-```{r}
-
+```{r, warning=FALSE}
+library(plyr)
 library(tidyverse)
 
 ```
@@ -36,6 +36,7 @@ glimpse(dataset)
 ```
 
 The dataset had 16 columns , 8 of type character and 8 numeric columns.
+The Total column was the target variable
 
 # 2.Data Cleaning
 
@@ -77,7 +78,7 @@ Finally I selected the numeric columns in my dataset and carried out PCA using t
 
 ```{r}
 
-dataset <- select(dataset , -1,-2,-5,-13,-9,-10,-11)
+dataset <- select(dataset , -1,-2,-5,-13,-9,-10,-11,-16)
 head(dataset)
 
 ```
@@ -85,15 +86,16 @@ head(dataset)
 I selected all the continuous features in my dataset and carried PCA with the prcomp() funtion.
 
 ```{r}
-pca <- prcomp(dataset[,c(3,5:9)], center = TRUE, scale = TRUE)
+pca <- prcomp(dataset[,c(3,4,5:8)], center = TRUE, scale = TRUE)
 summary(pca)
 
 ```
 
-After carrying out PCA I noted that the first principal component explained 74.43% of the total variance while the last three components explained 0% of the variance.
+After carrying out PCA I noted that the first principal component explained 65.45% of the total variance while the last two components explained 0% of the variance.
 
 
 Using the str() function , I noted that
+
 ```{r}
 
 str(pca)
@@ -104,22 +106,19 @@ str(pca)
 
 ```{r}
 
+library(dplyr)
 library(ggbiplot)
-ggbiplot(pca, obs.scale = 0.2, var.scale = 0.5)
+ggbiplot(pca, obs.scale = 0.7, var.scale = 0.8)
 
 ```
 
 
-```{r}
 
-library(ggbiplot)
-ggbiplot(pca, obs.scale = 0.5, var.scale = 0.5, groups = dataset$Customer.type,ellipse = TRUE, circle = TRUE)
-
-```
 ```{r}
 
 library(ggbiplot)
 ggbiplot(pca, obs.scale = .05, var.scale = 1, groups = as.factor(dataset$Quantity), ellipse = TRUE, circle = TRUE)
 
 ```
+
 

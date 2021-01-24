@@ -75,15 +75,16 @@ sum(duplicated(dataset))
 
 ## 3.1.Filter Method
 
-The used the correlation coefficient to filter out the highly correlated freatures from the dataset.
+The used the correlation coefficient to filter out the highly correlated features from the dataset.
 
 ```{r}
 
-dataset <- select(dataset , -1,-2,-3,-4,-5,-9,-10,-11,-13)
+dataset <- select(dataset , -1,-2,-3,-4,-5,-9,-10,-11,-16,-13)
 head(dataset)
 
 ```
-
+I selected the continuous variables within my dataset , however I did not select the Total , as this was the target variable in the dataset.
+I also dropped the Gross.margin.percentage as the columnn had a constant value and was therefore redundant.
 
 I used the Pearson's Correlation Coefficient and set a cutoff of 0.75 , features with a correlation coefficient greater that 0.75 were then excluded from the model.
 
@@ -115,10 +116,10 @@ names(dataset[,highlyCorrelated])
 
 ```
 
-The highly correlated features in this dataset were the Cogs , Total and Tax features with a correlation coefficient of 1.
+The highly correlated features in this dataset were the Cogs and Tax features with a correlation coefficient of 1.
 
 
-
+I then dropped these from the dataset.
 
 ```{r , fig.width=10,fig.length=10}
 
@@ -139,18 +140,30 @@ corrplot(correlationMatrix, order = "hclust")
 corrplot(cor(Dataset2), order = "hclust")
 
 ```
+After removing the highly correlated features from my dataset I was left with :
+
+ + Rating
+ + Unit Price
+ + Quantity
+ + Gross Income 
+As my features.
+
+
 
 ## 3.2.Wrapper Method
 
+I also attempted to use the Wrapper method to carry out feature selection.
 
 ```{r}
 
 Dataset <- read.csv("http://bit.ly/CarreFourDataset")
-Dataset <- select(Dataset , -1,-2,-3,-4,-5,-9,-10,-11,-13)
+Dataset <- select(Dataset , -1,-2,-3,-4,-5,-9,-10,-11,-13,-16)
 head(Dataset)
 
 ```
+I wanted to select the best features to use in building my model from the features listed above.
 
+I used the clustvarsel package to carry out the feature selection.
 
 ```{r}
 # Sequential forward greedy search (default)
@@ -164,22 +177,25 @@ out
 ```
 
 
+
+I then used the selected subset from the features above.
+
+The Selected subset: Quantity, cogs, Unit.price
+
 ```{r}
-# The selection algorithm would indicate that the subset 
-# we use for the clustering model is composed of variables X1 and X2 
-# and that other variables should be rejected. 
-# Having identified the variables that we use, we proceed to build the clustering model:
-# ---
-#
+
 
 Subset1 = Dataset[,out$subset]
-mod = Mclust(Subset1)
+mod = Mclust(Subset1 , G = 1:3)
 summary(mod)
 
 ```
 
 
 ```{r}
-plot(mod,c("classification"))
+plot(mod,c("uncertainty"))
 
 ```
+# Summary
+
+After carrying out both methods , the filter method selected four features , the ones that were not highly correlated while the wrapper method selected a subset of three features from the dataset.
