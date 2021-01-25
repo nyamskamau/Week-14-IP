@@ -25,6 +25,7 @@ I imported the dataset using the read.transactions() function
 ```{r}
 
 # Importing the Dataset
+
 dataset <- read.transactions("http://bit.ly/SupermarketDatasetII" ,  
                                    sep =",")
 #View(dataset)
@@ -48,7 +49,7 @@ inspect(dataset[1:10])
 ```
 
 
-I also previewed the labels of the items in my dataset.
+I also previewed the items in my dataset.
 
 ```{r}
 
@@ -59,7 +60,7 @@ tail(items,10)
 ```
 
 
-I then inspected the frequency of the first 15 labels in my dataset.
+I then inspected the frequency of the first 15 items in my dataset.
 
 ```{r}
 
@@ -80,7 +81,7 @@ itemFrequencyGGPlot <- function(x, topN) {
     as.data.frame %>%
     tibble::rownames_to_column() %>%
     ggplot(aes(reorder(rowname, `.`),`.`)) + 
-    geom_col(fill='cyan4') + labs(title='Top 20 Labels in the Dataset' , y  = "Frequency" , x = 'Items')+
+    geom_col(fill='cyan4') + labs(title='20 most frequently bought Items in the Dataset' , y  = "Frequency" , x = 'Items')+
     coord_flip()
 }  
 itemFrequencyGGPlot(dataset, 20)
@@ -96,7 +97,7 @@ I then obtained the rules of the dataset using the apriori()  function.
 
 ```{r}
 
-rules <- apriori (dataset, parameter = list(supp = 0.001, conf = 0.7))
+rules <- apriori (dataset, parameter = list(supp = 0.001, conf = 0.6))
 rules
 
 ```
@@ -110,9 +111,31 @@ inspect(rules[1:10])
 
 ```
 
+
+Similarly I did the same for the last ten rules 
+
+```{r}
+inspect(rules[535:545])
+
+```
+
+I used the quality() function to check the quality of the rules of my model.
+
+```{r}
+
+head(quality(rules))
+
+```
+
+```{r}
+
+tail(quality(rules))
+
+```
+
 # Visualizing association rules using the arulesviz package
 
-I used the arulesviz package to visualize the first fifteen rules created from the parameters of my model.
+In order to gain more insights from my model , I used the arulesviz package to visualize the first fifteen rules created from the parameters of my model.
 
 ```{r}
 #install.packages("arulesViz")
@@ -121,32 +144,52 @@ library(arulesViz)
 ```
 
 
+
+
 ```{r}
 
 ## Scatterplot with custom colors
 library(colorspace) 
 # for sequential_hcl
-plot(rules, control=list(col=sequential_hcl(100)))
+plot(rules)
 
 ```
 
 
+I noted that there was one rule with high lift , it also had low confidence and low support
+
+
+I created a subrules variable that had the first thirty rules of the model.
+I used the htmlwidget to create an interactive plot of the subrules.
+
 ```{r , fig.width=10,fig.height=10}
 
-subrules <- head(rules, n = 15, by = "confidence")
-
+subrules <- head(rules, n = 30, by = "confidence")
 
 plot(subrules, method = "graph" ,   engine = "htmlwidget")
 
 
+```
+For instance from rule 15 , people buying cake , meatballs and milk were also likely to buy mineral water.
+
+I also plotted the graph , with the default engine.
+Many arrows tend to point towards the Mineral water , meaning many of the purchases were associated with the purchase of mineral water.
+
+```{r , fig.width=15,fig.height=15}
+
 plot(subrules, method = "graph" ,   engine = "default")
 
+
+```
+
+I also used the paracoord method to plot out my subrules
+
+```{r , fig.width=10,fig.height=10}
 
 plot(subrules, method = "paracoord")
 
 ```
-
-
+Finally I plotted my subrules with the grouped method
 
 ```{r , fig.width=10,fig.height=10}
 
@@ -158,4 +201,35 @@ plot(subrules,method="grouped", measure="confidence", engine ="default" )
 
 ```
 
+# Summary 
 
+From my grouped plot I noted that Mineral water had an association with many of the items , for instance from this plot above it had :
+ + 1 rule with whole wheat , pasta and turkey with low lift and low confidence.
+  + 2 rules with nonfat milk , chocolate and four other items with low lift and low confidence.
+  + 6 rules with brownies , chicken and 14 other items , with low lift and low confidence.
+  
+  
+The rules with the highest confidence were :
+
++ Olive oil , light cream with three other items and mineral water.
++ Meatball , cake and one other item with milk
++ Mushroom Cream Sauce and Pasta with escalope
++ Mushroom Cream Sauce , French fries and one other item with escalope
+
+The rules with high lift were :
+
++ Eggs , Pasta and one other item with shrimp
++ Mushroom Cream Sauce , French fries and one other item with escalope
++ Pasta , milk with shrimp 
++ Mushroom Cream Sauce and Pasta with escalope
+
+```{r , fig.width=10,fig.height=10}
+
+
+
+## 2D matrix with shading
+plot(subrules,method="grouped", measure="support", engine ="default" )
+
+
+```
+I plotted the same graph , using the support in place of the confidence and similar results can be echoed here.
